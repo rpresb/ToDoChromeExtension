@@ -1,0 +1,12 @@
+body {
+    width: 500px;
+    height: 265px;
+}
+
+.jumbotron {
+    margin-bottom: 0;
+}
+
+.panel {
+    margin-bottom: 0;
+}

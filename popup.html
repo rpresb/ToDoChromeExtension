@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/popup.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="jumbotron" style="display: none;">
+    <h1>ToDo integrado ao Trello</h1>
+
+    <p>Este é o ToDo integrado ao Trello, para autorizar o acesso clique no botão abaixo.</p>
+
+    <p><a class="btn btn-primary btn-lg" href="#" role="button" id="btnAutorizar">Autorizar</a></p>
+</div>
+
+<div class="autorizado" style="display: none;">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">ToDo</h3>
+        </div>
+        <div id="todo-container" class="panel-body">
+            <div class="row hide" id="template">
+                <div class="col-lg-12">
+                    <div class="input-group">
+                        <span class="input-group-addon">
+                            <input type="checkbox" aria-label="Task checkbox">
+                        </span>
+                        <input type="text" class="form-control" aria-label="Task input" placeholder="Digite aqui sua tarefa">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel-body">
+            <a class="btn btn-primary btn-sm" href="#" role="button" id="btnSair">Sair</a>
+            <img id="loading" src="images/loading.gif" height="20" style="margin: 10px;"/>
+        </div>
+    </div>
+</div>
+
+<script src="js/jquery.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/popup.js"></script>
+</body>
+</html>
