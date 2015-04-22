@@ -8,6 +8,7 @@ const LISTS_URL = "https://api.trello.com/1/boards/[BOARD_ID]/lists?cards=open&c
 const CARD_CREATE_URL = "https://trello.com/1/cards?key=[KEY]&token=[TOKEN]&idList=[LIST_ID]&name=";
 const CARD_UPDATE_URL = "https://trello.com/1/cards/[CARD_ID]?key=[KEY]&token=[TOKEN]&name=";
 const CARD_DELETE_URL = "https://trello.com/1/cards/[CARD_ID]?key=[KEY]&token=[TOKEN]";
+const CARD_MOVE_URL = "https://trello.com/1/cards/[CARD_ID]?idList=[LIST_ID]&key=[KEY]&token=[TOKEN]";
 
 function setValue(key, value) {
 
@@ -108,6 +109,10 @@ function loadBoard() {
         } else {
             loadLists();
         }
+    }, function (jqxhr, textStatus, error) {
+        if (jqxhr.status === 401) {
+            logoff();
+        }
     });
 }
 
@@ -126,25 +131,27 @@ function loadLists() {
         clearList();
 
         data.forEach(function (list) {
+            var done = false;
+
             if (list.name === "To Do") {
                 self.toDoList = list;
-                if (list.cards) {
-                    list.cards.forEach(function (card) {
-                        showCard(card);
-                    });
-                }
             } else if (list.name === "Done") {
                 self.doneList = list;
+                done = true;
+            }
+
+            if (list.cards) {
+                list.cards.forEach(function (card) {
+                    showCard(card, done);
+                });
             }
         });
 
-        showCard({id: "new", name: ""});
+        showCard({id: "new", name: ""}, false);
     });
 }
 
-function showCard(card) {
-    console.log(card);
-
+function showCard(card, done) {
     var template = $("#template").clone().attr('id', 'card_' + card.id).removeClass("hide");
 
     $("input[type=text]", template)
@@ -153,7 +160,34 @@ function showCard(card) {
             saveCard($(this));
         });
 
+    $("input[type=checkbox]", template)
+        .on('change', function (e) {
+            moveCard(this);
+        });
+
+    if (card.id === 'new') {
+        $("input[type=checkbox]", template).attr('disabled', 'disabled');
+    }
+
+    if (done) {
+        $("input[type=checkbox]", template).attr('checked', 'checked');
+    }
+
     $("#todo-container").append(template);
+}
+
+function moveCard(checkbox) {
+    var cardId = $(checkbox).parent().parent().parent().parent().attr('id').replace('card_', '');
+
+    put(CARD_MOVE_URL
+        .replace('[KEY]', API_KEY)
+        .replace('[TOKEN]', self.token)
+        .replace('[CARD_ID]', cardId)
+        .replace('[LIST_ID]', (checkbox.checked ? self.doneList.id : self.toDoList.id)), function () {
+        console.log('moved');
+        loadLists();
+    });
+
 }
 
 function saveCard(input) {
@@ -226,18 +260,22 @@ function sendDelete(url, callback) {
 }
 
 
-function getJSON(url, callback) {
+function getJSON(url, callback, errorCallback) {
     loading(true);
-    var x = new XMLHttpRequest();
-    x.open('GET', url);
-    x.responseType = 'json';
-    x.onload = function () {
-        loading(false);
-        callback(x.response);
-    };
-    x.send();
-}
 
+    $.getJSON(url)
+        .done(function (json) {
+            callback(json);
+        })
+        .fail(function (jqxhr, textStatus, error) {
+            errorCallback(jqxhr, textStatus, error);
+        })
+        .always(function () {
+            setTimeout(function () {
+                loading(false);
+            }, 500);
+        });
+}
 
 document.addEventListener('DOMContentLoaded', function () {
     showInit();
